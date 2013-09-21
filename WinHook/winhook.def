@@ -1,0 +1,4 @@
+LIBRARY WINHOOK
+EXPORTS
+	SetWinHook
+	ClearWinHook
