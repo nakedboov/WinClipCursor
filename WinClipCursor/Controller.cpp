@@ -39,8 +39,8 @@ Controller::~Controller()
 		FreeLibrary(m_hWinHookModule);
 }
 
-/* poolling version */
-void Controller::RunPoollingLoop()
+/* polling version */
+void Controller::RunPollingLoop()
 {		
 	while (true)
 	{

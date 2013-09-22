@@ -14,7 +14,7 @@ public:
 	explicit Controller(HWND hWnd, const std::string& className, const std::string& winTitle);
 	~Controller();
 
-	void RunPoollingLoop();
+	void RunPollingLoop();
 	void SetClipHook();
 
 	ClipHelper& ClipCursorHelper() { return m_clipHelper; }

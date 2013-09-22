@@ -18,7 +18,7 @@ void StartHookVersion();
 
 int main(int argc, char* argv[])
 {	
-	std::cout << "Starting to clip the window - " << g_WindowTitle << std::endl;
+	std::cout << "To start clipping the window - " << g_WindowTitle << std::endl;
 
 	try
 	{
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 		std::cout << e.what() << std::endl;
 	}
 
-	std::cout << "Ending to clip the window - " << g_WindowTitle << std::endl;
+	std::cout << "To ending clipping the window - " << g_WindowTitle << std::endl;
 	
 	return 0;
 }
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 void StartPollingVersion()
 {
 	g_ControllerPtr.reset(new Controller(g_ClassName, g_WindowTitle));
-	g_ControllerPtr->RunPoollingLoop();
+	g_ControllerPtr->RunPollingLoop();
 }
 
 void StartHookVersion()
