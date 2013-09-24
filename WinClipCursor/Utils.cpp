@@ -2,22 +2,28 @@
 
 void GetErrorDescription(DWORD errorCode, std::string& description)
 {
-	LPVOID lpMsgBuf = 0;
+	LPWSTR lpMsgBuf = nullptr;
    
-	DWORD count = FormatMessage(
+	DWORD count = FormatMessageW(
 					FORMAT_MESSAGE_ALLOCATE_BUFFER | 
 					FORMAT_MESSAGE_FROM_SYSTEM |
 					FORMAT_MESSAGE_IGNORE_INSERTS,
-					NULL,
+					nullptr,
 					errorCode,
 					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPTSTR) &lpMsgBuf,
-					0, NULL );
+					(LPWSTR)&lpMsgBuf,
+					0, nullptr );
 
 	if (count != 0)
-		description.assign((char*)lpMsgBuf);
+	{
+		char dst[255] = {0};
+		CharToOemBuffW(lpMsgBuf, dst, sizeof(dst));
+		description.assign(dst, count);
+	}
 	else
+	{
 		description.assign("cannt retrieve error description");
+	}
 
 	if (lpMsgBuf != 0)
 		LocalFree(lpMsgBuf);
@@ -67,7 +73,7 @@ bool CursorInClientArea(HWND hwnd)
 }
 
 extern const unsigned int g_SleepTimeOut;
-HWND FindRequiredWindow(const std::string& className, const std::string& title, unsigned int attemptCount)
+HWND FindRequiredWindow(const std::wstring& className, const std::wstring& title, unsigned int attemptCount)
 {
 	HWND requiredWindow = NULL;
 
@@ -76,7 +82,7 @@ HWND FindRequiredWindow(const std::string& className, const std::string& title, 
 
 	while (attemptCount-- > 0)
 	{
-		requiredWindow	= FindWindow(className.c_str(), title.c_str());
+		requiredWindow	= FindWindowW(className.c_str(), title.c_str());
 		if (requiredWindow != NULL)
 			break;
 						

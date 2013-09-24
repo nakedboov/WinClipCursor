@@ -12,4 +12,4 @@
 void GetErrorDescription(DWORD errorCode, std::string& description);
 bool CalcRequiredClipRect(HWND hwnd, RECT& rect);
 bool CursorInClientArea(HWND hwnd);
-HWND FindRequiredWindow(const std::string& className, const std::string& title, unsigned int attemptCount);
+HWND FindRequiredWindow(const std::wstring& className, const std::wstring& title, unsigned int attemptCount);

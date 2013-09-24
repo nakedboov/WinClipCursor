@@ -3,11 +3,11 @@
 
 #include "stdafx.h"
 
+#include "../WinClipCursor/UserMsg.h"
+
 //shared section (data shared by all process)
 #pragma data_seg(".CWH")
-static HHOOK g_hCallWndHook = NULL;
-static HHOOK g_hMouseHook = NULL;
-static HWND g_hWndSrv = NULL;
+static HWND g_hWndSrv = nullptr;
 #pragma data_seg()
 #pragma comment(linker, "/section:.CWH,rws")
 
@@ -15,53 +15,60 @@ extern HINSTANCE g_hInst;
 
 static LRESULT CALLBACK CallWndHookProc(UINT nCode, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK MouseHookProc(UINT nCode, WPARAM wParam, LPARAM lParam);
-BOOL ClearWinHook();
+BOOL ClearWinHooks();
 
-BOOL SetWinHook(HWND hWnd, DWORD threadId)
+static HHOOK g_hCallWndHook = nullptr;
+static HHOOK g_hMouseHook = nullptr;
+
+BOOL SetWinHooks(HWND hWnd, DWORD threadId)
 {
-	if (g_hWndSrv != NULL)
+	if (g_hWndSrv != nullptr)
 		return FALSE; //already hooked
 	
-	g_hCallWndHook = SetWindowsHookEx(WH_CALLWNDPROC, (HOOKPROC)CallWndHookProc, g_hInst, threadId);
-	if (g_hCallWndHook != NULL)
+	g_hCallWndHook = SetWindowsHookExW(WH_CALLWNDPROC, (HOOKPROC)CallWndHookProc, g_hInst, threadId);
+	if (g_hCallWndHook != nullptr)
 	{ 
-		g_hMouseHook = SetWindowsHookEx(WH_MOUSE, (HOOKPROC)MouseHookProc, g_hInst, threadId);
-		if (g_hMouseHook != NULL)
+		g_hMouseHook = SetWindowsHookExW(WH_MOUSE, (HOOKPROC)MouseHookProc, g_hInst, threadId);
+		if (g_hMouseHook != nullptr)
 		{
 			g_hWndSrv = hWnd;
 			return TRUE;
 		}
-		ClearWinHook();
+		ClearWinHooks();
 	}
 
 	return FALSE;
 }
 
-BOOL ClearWinHook()
+BOOL ClearWinHooks()
 {
-	BOOL res = TRUE;
-
-	if (g_hCallWndHook != NULL)
+	if (g_hCallWndHook != nullptr)
 	{	
-		res = UnhookWindowsHookEx(g_hCallWndHook);
+		BOOL res = UnhookWindowsHookEx(g_hCallWndHook);
 		if (res)
-			g_hCallWndHook = NULL;
+			g_hCallWndHook = nullptr;
 	}
 
-	if (g_hMouseHook != NULL)
+	if (g_hMouseHook != nullptr)
 	{	
-		res = UnhookWindowsHookEx(g_hMouseHook);
+		BOOL res = UnhookWindowsHookEx(g_hMouseHook);
 		if (res)
-			g_hMouseHook = NULL;
+			g_hMouseHook = nullptr;
 	}
 
-	return res;
+	if ((g_hCallWndHook == nullptr) && (g_hMouseHook == nullptr))
+	{
+		g_hWndSrv = nullptr;
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 static LRESULT CALLBACK CallWndHookProc(UINT nCode, WPARAM wParam, LPARAM lParam)
 {
 	if(nCode < 0)
-		return CallNextHookEx(g_hCallWndHook, nCode, wParam, lParam);
+		return CallNextHookEx(nullptr, nCode, wParam, lParam);
 	
 	if (nCode == HC_ACTION)
 	{
@@ -69,28 +76,31 @@ static LRESULT CALLBACK CallWndHookProc(UINT nCode, WPARAM wParam, LPARAM lParam
 		switch(swpStruct->message)
 		{
 		case WM_ACTIVATE:
-			PostMessage(g_hWndSrv, WM_ACTIVATE, swpStruct->wParam, swpStruct->lParam);
+			PostMessageW(g_hWndSrv, WMU_ACTIVATE, swpStruct->wParam, swpStruct->lParam);
+			break;
+		case WM_DESTROY:
+			PostMessageW(g_hWndSrv, WMU_DESTROY, swpStruct->wParam, swpStruct->lParam);
 			break;
 		}
 	}
 
-	return CallNextHookEx(g_hCallWndHook, nCode, wParam, lParam);
+	return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
 static LRESULT CALLBACK MouseHookProc(UINT nCode, WPARAM wParam, LPARAM lParam)
 {
 	if(nCode < 0)
-		return CallNextHookEx(g_hCallWndHook, nCode, wParam, lParam);
+		return CallNextHookEx(nullptr, nCode, wParam, lParam);
 
 	if (nCode == HC_ACTION)
 	{
 		switch (wParam)
 		{
 		case WM_LBUTTONDOWN:
-			PostMessage(g_hWndSrv, WM_LBUTTONDOWN, wParam, lParam);
+			PostMessageW(g_hWndSrv, WMU_LBUTTONDOWN, wParam, lParam);
 			break;
 		}
 	}
 
-	return CallNextHookEx(g_hCallWndHook, nCode, wParam, lParam);
+	return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }

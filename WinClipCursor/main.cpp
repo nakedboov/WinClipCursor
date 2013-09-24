@@ -7,8 +7,8 @@
 #include <string>
 #include <memory>
 
-const char* g_ClassName = "Warcraft III";
-const char* g_WindowTitle = "Warcraft III";
+const wchar_t* g_ClassName = L"Warcraft III";
+const wchar_t* g_WindowTitle = L"Warcraft III";
 extern const unsigned int g_SleepTimeOut = 500;
 
 std::shared_ptr<Controller> g_ControllerPtr = 0;
@@ -18,7 +18,7 @@ void StartHookVersion();
 
 int main(int argc, char* argv[])
 {	
-	std::cout << "To start clipping the window - " << g_WindowTitle << std::endl;
+	std::wcout << "start clipping the window - " << g_WindowTitle << std::endl;
 
 	try
 	{
@@ -27,30 +27,30 @@ int main(int argc, char* argv[])
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << e.what() << std::endl;
+		std::wcout << e.what() << std::endl;
 	}
 
-	std::cout << "To ending clipping the window - " << g_WindowTitle << std::endl;
+	std::wcout << "end clipping the window - " << g_WindowTitle << std::endl;
 	
 	return 0;
 }
 
 void StartPollingVersion()
 {
-	g_ControllerPtr.reset(new Controller(g_ClassName, g_WindowTitle));
+	g_ControllerPtr.reset(new Controller(nullptr, g_ClassName, g_WindowTitle));
 	g_ControllerPtr->RunPollingLoop();
 }
 
 void StartHookVersion()
 {
-	const char* className = "ClipServerWindowClass";
-	WNDCLASSEX wndclass = 
+	const wchar_t* className = L"ClipServerWindowClass";
+	WNDCLASSEXW wndclass = 
 	{ 
 		sizeof(WNDCLASSEX), 
 		CS_DBLCLKS, 
 		Controller::MainWndProc,
 		0, 0, 
-		GetModuleHandle(0), 
+		GetModuleHandleW(nullptr), 
 		0,
 		0, 
 		0,
@@ -59,7 +59,7 @@ void StartHookVersion()
 		0 
 	};
 
-	if (!RegisterClassEx(&wndclass))
+	if (!RegisterClassExW(&wndclass))
 	{
 		std::string description;
 		GetErrorDescription(GetLastError(), description);
@@ -67,9 +67,9 @@ void StartHookVersion()
 		return;
 	}
 
-	HWND hWndSrv = CreateWindowEx(0, className, "ClipServer Window",
-			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-			CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, GetModuleHandle(0), 0);
+	HWND hWndSrv = CreateWindowExW(0, className, L"ClipServer Window",
+			WS_CHILDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+			CW_USEDEFAULT, CW_USEDEFAULT, HWND_MESSAGE, nullptr, GetModuleHandleW(nullptr), nullptr);
 		
 	if (!hWndSrv)
 	{
@@ -88,9 +88,9 @@ void StartHookVersion()
 
 	MSG msg;
 	BOOL fGotMessage;
-	while ((fGotMessage = GetMessage(&msg, (HWND) NULL, 0, 0)) != 0 && fGotMessage != -1)  
+	while ((fGotMessage = GetMessageW(&msg, nullptr, 0, 0)) != 0 && fGotMessage != -1)  
 	{
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		DispatchMessageW(&msg);
 	}
 }

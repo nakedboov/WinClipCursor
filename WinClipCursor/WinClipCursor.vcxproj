@@ -171,6 +171,7 @@
     <ClInclude Include="FullScreen.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="UserMsg.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>

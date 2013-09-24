@@ -3,7 +3,7 @@
 #include <assert.h>
 
 FullScreen::FullScreen() :
-	m_hwnd(NULL),
+	m_hwnd(nullptr),
 	m_fullScreen(false)
 {
 	SecureZeroMemory(&m_origWindowRect, sizeof(m_origWindowRect));
@@ -11,7 +11,7 @@ FullScreen::FullScreen() :
 
 FullScreen::~FullScreen()
 {
-	if (m_fullScreen && m_hwnd != NULL)
+	if (m_fullScreen && m_hwnd != nullptr)
 		Leave();
 }
 
@@ -25,8 +25,8 @@ bool FullScreen::Enter()
 	if (m_fullScreen)
 		return true;
 
-	assert(m_hwnd);
-	if (m_hwnd == NULL)
+	assert(m_hwnd != nullptr);
+	if (m_hwnd == nullptr)
 		return false;
 	
 	HMONITOR hmon = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);

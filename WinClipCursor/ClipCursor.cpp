@@ -6,7 +6,7 @@
 
 ClipHelper::ClipHelper() :
 	m_clipped(false),
-	m_hwnd(NULL)
+	m_hwnd(nullptr)
 {
 	SecureZeroMemory(&m_currentClipArea, sizeof(m_currentClipArea));
 	SecureZeroMemory(&m_prevClipArea, sizeof(m_prevClipArea));
@@ -30,7 +30,7 @@ void ClipHelper::Init(HWND hwnd)
 
 bool ClipHelper::Clip()
 {
-	if (m_hwnd == NULL)
+	if (m_hwnd == nullptr)
 		return false;
 
 	if (m_clipped)

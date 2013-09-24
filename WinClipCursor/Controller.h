@@ -10,8 +10,7 @@ class Controller
 {
 public:
 
-	explicit Controller(const std::string& className, const std::string& winTitle);
-	explicit Controller(HWND hWnd, const std::string& className, const std::string& winTitle);
+	explicit Controller(HWND hWnd, const std::wstring& className, const std::wstring& winTitle);
 	~Controller();
 
 	void RunPollingLoop();
@@ -31,11 +30,11 @@ private:
 	HWND				m_hWndServer;
 	HMODULE				m_hWinHookModule;
 	
-	SetWinHookPtr		m_pSetWinHook;
-	ClearWinHookPtr		m_pClearWinHook;
+	SetWinHookPtr		m_pSetWinHooks;
+	ClearWinHookPtr		m_pClearWinHooks;
 
-	std::string m_className;
-	std::string m_winTitle;
+	std::wstring m_className;
+	std::wstring m_winTitle;
 
 	ClipHelper			m_clipHelper;
 	FullScreen			m_fullScreen;

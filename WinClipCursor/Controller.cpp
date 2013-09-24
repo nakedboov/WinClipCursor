@@ -1,6 +1,7 @@
 #include "Controller.h"
 
 #include "Utils.h"
+#include "UserMsg.h"
 
 #include <iostream>
 #include <memory>
@@ -10,21 +11,11 @@ extern std::shared_ptr<Controller> g_ControllerPtr;
 
 bool Controller::gs_ActivateClip = false;
 
-Controller::Controller(const std::string& className, const std::string& winTitle):
-	m_hWndServer(NULL),
-	m_hWinHookModule(NULL),
-	m_pSetWinHook(0),
-	m_pClearWinHook(0),
-	m_className(className),
-	m_winTitle(winTitle)
-{
-}
-
-Controller::Controller(HWND hWnd, const std::string& className, const std::string& winTitle):
+Controller::Controller(HWND hWnd, const std::wstring& className, const std::wstring& winTitle):
 	m_hWndServer(hWnd),
-	m_hWinHookModule(NULL),
-	m_pSetWinHook(0),
-	m_pClearWinHook(0),
+	m_hWinHookModule(nullptr),
+	m_pSetWinHooks(nullptr),
+	m_pClearWinHooks(nullptr),
 	m_className(className),
 	m_winTitle(winTitle)
 {
@@ -32,10 +23,10 @@ Controller::Controller(HWND hWnd, const std::string& className, const std::strin
 
 Controller::~Controller()
 {
-	if (m_pClearWinHook != 0)
-		m_pClearWinHook();
+	if (m_pClearWinHooks != nullptr)
+		m_pClearWinHooks();
 
-	if (m_hWinHookModule != NULL)
+	if (m_hWinHookModule != nullptr)
 		FreeLibrary(m_hWinHookModule);
 }
 
@@ -47,7 +38,7 @@ void Controller::RunPollingLoop()
 		HWND activeWindow		= GetForegroundWindow();
 		HWND requiredWindow		= FindRequiredWindow(m_className, m_winTitle, 5);
 
-		if (requiredWindow == NULL)
+		if (requiredWindow == nullptr)
 			throw std::runtime_error("Required window not found");
 		
 		m_fullScreen.Init(requiredWindow);
@@ -92,26 +83,26 @@ void Controller::RunPollingLoop()
 void Controller::SetClipHook()
 {
 	HWND requiredWindow		= FindRequiredWindow(m_className, m_winTitle, 5);
-	if (requiredWindow == NULL)
+	if (requiredWindow == nullptr)
 		throw std::runtime_error("Required window not found");
 		
 	m_fullScreen.Init(requiredWindow);
 	m_clipHelper.Init(requiredWindow);
 
-	m_hWinHookModule = LoadLibraryA("WinHook.dll");
-	if (m_hWinHookModule == NULL)
+	m_hWinHookModule = LoadLibraryW(L"WinHook.dll");
+	if (m_hWinHookModule == nullptr)
 		throw std::runtime_error("WinHook.dll not found.");
 
-	m_pSetWinHook = (SetWinHookPtr)GetProcAddress(m_hWinHookModule, "SetWinHook");
-	m_pClearWinHook = (ClearWinHookPtr)GetProcAddress(m_hWinHookModule, "ClearWinHook");
+	m_pSetWinHooks = (SetWinHookPtr)GetProcAddress(m_hWinHookModule, "SetWinHooks");
+	m_pClearWinHooks = (ClearWinHookPtr)GetProcAddress(m_hWinHookModule, "ClearWinHooks");
 
-	if ((m_pSetWinHook == 0) || (m_pClearWinHook == 0))
+	if ((m_pSetWinHooks == nullptr) || (m_pClearWinHooks == nullptr))
 		throw std::runtime_error("Invalid WinHook.dll");
 
 	DWORD processId = 0;
 	DWORD threadId = GetWindowThreadProcessId(requiredWindow, &processId);
 	
-	if (!m_pSetWinHook(m_hWndServer, threadId))
+	if (!m_pSetWinHooks(m_hWndServer, threadId))
 	{	
 		std::string description;
 		GetErrorDescription(GetLastError(), description);
@@ -124,7 +115,7 @@ void Controller::SetClipHook()
 
 LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_ACTIVATE) 
+	if (uMsg == WMU_ACTIVATE) 
     { 
 		switch (wParam)
 		{
@@ -153,7 +144,7 @@ LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		}
 		return 0;
 	}
-	else if (uMsg == WM_LBUTTONDOWN)
+	else if (uMsg == WMU_LBUTTONDOWN)
 	{
 		DEBUG_TRACE("WM_LBUTTONDOWN");
 		
@@ -172,6 +163,12 @@ LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		else
 		{	DEBUG_TRACE("EnterFullscreen failed"); }
 		
+		return 0;
+	}
+	else if (uMsg == WMU_DESTROY)
+	{
+		DEBUG_TRACE("WM_DESTROY");
+		PostQuitMessage(0); 
 		return 0;
 	}
 	

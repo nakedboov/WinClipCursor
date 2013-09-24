@@ -1,4 +1,4 @@
 LIBRARY WINHOOK
 EXPORTS
-	SetWinHook
-	ClearWinHook
+	SetWinHooks
+	ClearWinHooks
