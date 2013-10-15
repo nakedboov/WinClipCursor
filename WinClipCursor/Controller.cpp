@@ -9,9 +9,8 @@
 extern const unsigned int g_SleepTimeOut;
 extern std::shared_ptr<Controller> g_ControllerPtr;
 
-bool Controller::gs_ActivateClip = false;
-
 Controller::Controller(HWND hWnd, const std::wstring& className, const std::wstring& winTitle):
+	m_ClipState(ClipStateType::ClipStateUnknown),
 	m_hWndServer(hWnd),
 	m_hWinHookModule(nullptr),
 	m_pSetWinHooks(nullptr),
@@ -102,7 +101,7 @@ void Controller::SetClipHook()
 	DWORD processId = 0;
 	DWORD threadId = GetWindowThreadProcessId(requiredWindow, &processId);
 	
-	if (!m_pSetWinHooks(m_hWndServer, threadId))
+	if (!m_pSetWinHooks(m_hWndServer, requiredWindow, threadId))
 	{	
 		std::string description;
 		GetErrorDescription(GetLastError(), description);
@@ -113,6 +112,16 @@ void Controller::SetClipHook()
 	}
 }
 
+ClipStateType::Type Controller::GetClipState()
+{
+	return m_ClipState;
+}
+
+void Controller::SetClipState(ClipStateType::Type state)
+{
+	m_ClipState = state;
+}
+
 LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WMU_ACTIVATE) 
@@ -121,15 +130,15 @@ LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		{
 		case WA_ACTIVE:
 			DEBUG_TRACE("WA_ACTIVE");
-			gs_ActivateClip = true;
+			g_ControllerPtr->SetClipState(ClipStateType::ClipStateActivate);
 			break;
 		case WA_CLICKACTIVE:
 			DEBUG_TRACE("WA_CLICKACTIVE");
-			gs_ActivateClip = true;
+			g_ControllerPtr->SetClipState(ClipStateType::ClipStateActivate);
 			break;
 		case WA_INACTIVE:
 			DEBUG_TRACE("WA_INACTIVE");
-			gs_ActivateClip = false;
+			g_ControllerPtr->SetClipState(ClipStateType::ClipStateDeactivate);
 			if (g_ControllerPtr->ClipCursorHelper().IsClipped())
 			{
 				if (g_ControllerPtr->FullScreenHelper().Leave())
@@ -148,7 +157,7 @@ LRESULT CALLBACK Controller::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	{
 		DEBUG_TRACE("WM_LBUTTONDOWN");
 		
-		if (!gs_ActivateClip)
+		if (g_ControllerPtr->GetClipState() == ClipStateType::ClipStateDeactivate)
 			return 0;
 
 		if (g_ControllerPtr->ClipCursorHelper().IsClipped())

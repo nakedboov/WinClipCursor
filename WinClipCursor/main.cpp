@@ -18,7 +18,7 @@ void StartHookVersion();
 
 int main(int argc, char* argv[])
 {	
-	std::wcout << "start clipping the window - " << g_WindowTitle << std::endl;
+	std::wcout << L"start clipping the window - " << g_WindowTitle << std::endl;
 
 	try
 	{
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 		std::wcout << e.what() << std::endl;
 	}
 
-	std::wcout << "end clipping the window - " << g_WindowTitle << std::endl;
+	std::wcout << L"end clipping the window - " << g_WindowTitle << std::endl;
 	
 	return 0;
 }

@@ -6,6 +6,18 @@
 #include "ClipCursor.h"
 #include "FullScreen.h"
 
+namespace ClipStateType
+{
+	enum
+	{
+		ClipStateUnknown = 0,
+		ClipStateActivate = 1,
+		ClipStateDeactivate = 2
+	};
+
+	typedef unsigned int Type;
+}
+
 class Controller
 {
 public:
@@ -19,13 +31,17 @@ public:
 	ClipHelper& ClipCursorHelper() { return m_clipHelper; }
 	FullScreen&	FullScreenHelper() { return m_fullScreen; }
 
-	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static bool gs_ActivateClip;
+	ClipStateType::Type GetClipState();
+	void SetClipState(ClipStateType::Type state);
 
+	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	
 private:
 	
-	typedef BOOL (*SetWinHookPtr)(HWND hWnd, DWORD threadId);
+	typedef BOOL (*SetWinHookPtr)(HWND hWndSrv, HWND hWndTrg, DWORD threadId);
 	typedef BOOL (*ClearWinHookPtr)();
+
+	ClipStateType::Type	m_ClipState;
 
 	HWND				m_hWndServer;
 	HMODULE				m_hWinHookModule;

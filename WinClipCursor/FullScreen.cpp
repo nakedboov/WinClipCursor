@@ -58,11 +58,16 @@ bool FullScreen::Leave()
 	if (!m_fullScreen)
 		return true;
 	
-	if (!SetWindowPos(m_hwnd, HWND_NOTOPMOST, m_origWindowRect.left, m_origWindowRect.top, 
+	if (!IsWindowVisible(m_hwnd))
+		return true;
+
+	if (!SetWindowPos(m_hwnd, HWND_TOPMOST, m_origWindowRect.left, m_origWindowRect.top, 
 								m_origWindowRect.right - m_origWindowRect.left, 
-								m_origWindowRect.bottom - m_origWindowRect.top, SWP_SHOWWINDOW))
+								m_origWindowRect.bottom - m_origWindowRect.top, SWP_NOACTIVATE | SWP_NOZORDER))
+	{
 		return false;
-	
+	}
+
 	m_fullScreen = false;
 
     return true;

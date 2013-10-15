@@ -8,6 +8,7 @@
 //shared section (data shared by all process)
 #pragma data_seg(".CWH")
 static HWND g_hWndSrv = nullptr;
+static HWND g_hWndTarget = nullptr;
 #pragma data_seg()
 #pragma comment(linker, "/section:.CWH,rws")
 
@@ -20,7 +21,7 @@ BOOL ClearWinHooks();
 static HHOOK g_hCallWndHook = nullptr;
 static HHOOK g_hMouseHook = nullptr;
 
-BOOL SetWinHooks(HWND hWnd, DWORD threadId)
+BOOL SetWinHooks(HWND hWndSrv, HWND hWndTrg, DWORD threadId)
 {
 	if (g_hWndSrv != nullptr)
 		return FALSE; //already hooked
@@ -31,7 +32,8 @@ BOOL SetWinHooks(HWND hWnd, DWORD threadId)
 		g_hMouseHook = SetWindowsHookExW(WH_MOUSE, (HOOKPROC)MouseHookProc, g_hInst, threadId);
 		if (g_hMouseHook != nullptr)
 		{
-			g_hWndSrv = hWnd;
+			g_hWndSrv = hWndSrv;
+			g_hWndTarget = hWndTrg;
 			return TRUE;
 		}
 		ClearWinHooks();
@@ -59,6 +61,7 @@ BOOL ClearWinHooks()
 	if ((g_hCallWndHook == nullptr) && (g_hMouseHook == nullptr))
 	{
 		g_hWndSrv = nullptr;
+		g_hWndTarget = nullptr;
 		return TRUE;
 	}
 
@@ -73,14 +76,19 @@ static LRESULT CALLBACK CallWndHookProc(UINT nCode, WPARAM wParam, LPARAM lParam
 	if (nCode == HC_ACTION)
 	{
 		PCWPSTRUCT swpStruct = (PCWPSTRUCT)lParam;
-		switch(swpStruct->message)
+
+		//skip messages from childs
+		if (g_hWndTarget == swpStruct->hwnd)
 		{
-		case WM_ACTIVATE:
-			PostMessageW(g_hWndSrv, WMU_ACTIVATE, swpStruct->wParam, swpStruct->lParam);
-			break;
-		case WM_DESTROY:
-			PostMessageW(g_hWndSrv, WMU_DESTROY, swpStruct->wParam, swpStruct->lParam);
-			break;
+			switch(swpStruct->message)
+			{
+			case WM_ACTIVATE:
+				PostMessageW(g_hWndSrv, WMU_ACTIVATE, swpStruct->wParam, swpStruct->lParam);
+				break;
+			case WM_DESTROY:
+				PostMessageW(g_hWndSrv, WMU_DESTROY, (WPARAM)swpStruct->hwnd, swpStruct->lParam);
+				break;
+			}
 		}
 	}
 
@@ -94,11 +102,17 @@ static LRESULT CALLBACK MouseHookProc(UINT nCode, WPARAM wParam, LPARAM lParam)
 
 	if (nCode == HC_ACTION)
 	{
-		switch (wParam)
+		PMOUSEHOOKSTRUCT pmsStruct = (PMOUSEHOOKSTRUCT)lParam;
+
+		//skip messages from childs
+		if (g_hWndTarget == pmsStruct->hwnd)
 		{
-		case WM_LBUTTONDOWN:
-			PostMessageW(g_hWndSrv, WMU_LBUTTONDOWN, wParam, lParam);
-			break;
+			switch (wParam)
+			{
+			case WM_LBUTTONDOWN:
+				PostMessageW(g_hWndSrv, WMU_LBUTTONDOWN, wParam, lParam);
+				break;
+			}
 		}
 	}
 
