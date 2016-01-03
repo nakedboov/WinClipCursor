@@ -37,24 +37,14 @@ bool ClipHelper::Clip()
 		return true;
 
 	if (!::GetClipCursor(&m_prevClipArea))
-	{
-		std::string description;
-		DWORD lastError = GetLastError();
-		GetErrorDescription(lastError, description);
-		throw std::runtime_error(description);
-	}
-
+		RaiseError("Couldn't GetClipCursor:\n");
+	
 	RECT rect;
 	if (!CalcRequiredClipRect(m_hwnd, rect))
 		return false;
 
 	if (!::ClipCursor(&rect))
-	{
-		std::string description;
-		DWORD lastError = GetLastError();
-		GetErrorDescription(lastError, description);
-		throw std::runtime_error(description);
-	}
+		RaiseError("Couldn't ClipCursor:\n");
 
 	m_currentClipArea = rect;
 	m_clipped = true;
@@ -68,12 +58,7 @@ bool ClipHelper::UnClip()
 		return true;
 
 	if (!::ClipCursor(&m_prevClipArea))
-	{
-		std::string description;
-		DWORD lastError = GetLastError();
-		GetErrorDescription(lastError, description);
-		throw std::runtime_error(description);
-	}
+		RaiseError("Couldn't ClipCursor:\n");
 		
 	SecureZeroMemory(&m_currentClipArea, sizeof(m_currentClipArea));
 	SecureZeroMemory(&m_prevClipArea, sizeof(m_prevClipArea));

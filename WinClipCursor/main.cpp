@@ -18,19 +18,26 @@ void StartHookVersion();
 
 int main(int argc, char* argv[])
 {	
-	std::wcout << L"start clipping the window - " << g_WindowTitle << std::endl;
+	std::wcout << L"WinClipCursor v. 1.0.0.1" << std::endl;
+	std::cout << "-----------------------------------------" << std::endl;
+	
+	getchar();
 
 	try
 	{
+		Permissions::EnableRequiredAccess(g_ClassName, g_WindowTitle);
+
+		std::wcout << L"start clipping the window - " << g_WindowTitle << std::endl;
+
 		//StartPollingVersion();
 		StartHookVersion();
+
+		std::wcout << L"end clipping the window - " << g_WindowTitle << std::endl;
 	}
 	catch(const std::exception& e)
 	{
 		std::wcout << e.what() << std::endl;
 	}
-
-	std::wcout << L"end clipping the window - " << g_WindowTitle << std::endl;
 	
 	return 0;
 }
@@ -63,8 +70,7 @@ void StartHookVersion()
 	{
 		std::string description;
 		GetErrorDescription(GetLastError(), description);
-		std::cout << description << std::endl;
-		return;
+		throw std::runtime_error(description);
 	}
 
 	HWND hWndSrv = CreateWindowExW(0, className, L"ClipServer Window",
@@ -75,8 +81,7 @@ void StartHookVersion()
 	{
 		std::string description;
 		GetErrorDescription(GetLastError(), description);
-		std::cout << description << std::endl;
-		return;
+		throw std::runtime_error(description);
 	}
 
 	ShowWindow(hWndSrv, SW_HIDE); 

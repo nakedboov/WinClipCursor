@@ -78,13 +78,12 @@ void Controller::RunPollingLoop()
 	}
 }
 
-
 void Controller::SetClipHook()
 {
 	HWND requiredWindow		= FindRequiredWindow(m_className, m_winTitle, 5);
 	if (requiredWindow == nullptr)
 		throw std::runtime_error("Required window not found");
-		
+	
 	m_fullScreen.Init(requiredWindow);
 	m_clipHelper.Init(requiredWindow);
 
@@ -99,17 +98,12 @@ void Controller::SetClipHook()
 		throw std::runtime_error("Invalid WinHook.dll");
 
 	DWORD processId = 0;
-	DWORD threadId = GetWindowThreadProcessId(requiredWindow, &processId);
-	
+	DWORD threadId = ::GetWindowThreadProcessId(requiredWindow, &processId);
+	if (processId == 0 || threadId == 0)
+		throw std::runtime_error("Invalid process id");
+
 	if (!m_pSetWinHooks(m_hWndServer, requiredWindow, threadId))
-	{	
-		std::string description;
-		GetErrorDescription(GetLastError(), description);
-		
-		std::string msg("Hook failed:\n");
-		msg.append(description);
-		throw std::runtime_error(msg);
-	}
+		RaiseError("Hook failed:\n");
 }
 
 ClipStateType::Type Controller::GetClipState()

@@ -11,6 +11,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		//MessageBoxW(NULL, L"Test", L"Test", MB_OK);
 		g_hInst = hModule;
 		break;
 	case DLL_THREAD_ATTACH:

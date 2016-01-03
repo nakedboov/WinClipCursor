@@ -26,10 +26,11 @@ BOOL SetWinHooks(HWND hWndSrv, HWND hWndTrg, DWORD threadId)
 	if (g_hWndSrv != nullptr)
 		return FALSE; //already hooked
 	
-	g_hCallWndHook = SetWindowsHookExW(WH_CALLWNDPROC, (HOOKPROC)CallWndHookProc, g_hInst, threadId);
+	g_hCallWndHook = ::SetWindowsHookExW(WH_CALLWNDPROC, (HOOKPROC)&CallWndHookProc, g_hInst, threadId);
+	DWORD err = ::GetLastError();
 	if (g_hCallWndHook != nullptr)
 	{ 
-		g_hMouseHook = SetWindowsHookExW(WH_MOUSE, (HOOKPROC)MouseHookProc, g_hInst, threadId);
+		g_hMouseHook = ::SetWindowsHookExW(WH_MOUSE, (HOOKPROC)&MouseHookProc, g_hInst, threadId);
 		if (g_hMouseHook != nullptr)
 		{
 			g_hWndSrv = hWndSrv;

@@ -29,19 +29,19 @@ bool FullScreen::Enter()
 	if (m_hwnd == nullptr)
 		return false;
 	
-	HMONITOR hmon = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
+	HMONITOR hmon = ::MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTOPRIMARY);
 	MONITORINFO mi = { sizeof(mi) };
 
-	if (!GetMonitorInfo(hmon, &mi)) 
+	if (!::GetMonitorInfoW(hmon, &mi)) 
 		return false;
 
-	if (!GetWindowRect(m_hwnd, &m_origWindowRect))
+	if (!::GetWindowRect(m_hwnd, &m_origWindowRect))
 	{
 		SecureZeroMemory(&m_origWindowRect, sizeof(m_origWindowRect));
 		return false;
 	}
 
-	if (!SetWindowPos(m_hwnd, HWND_TOPMOST, 
+	if (!::SetWindowPos(m_hwnd, HWND_TOPMOST, 
 					   mi.rcMonitor.left,
 					   mi.rcMonitor.top,
 					   mi.rcMonitor.right - mi.rcMonitor.left,
@@ -58,10 +58,10 @@ bool FullScreen::Leave()
 	if (!m_fullScreen)
 		return true;
 	
-	if (!IsWindowVisible(m_hwnd))
+	if (!::IsWindowVisible(m_hwnd))
 		return true;
 
-	if (!SetWindowPos(m_hwnd, HWND_TOPMOST, m_origWindowRect.left, m_origWindowRect.top, 
+	if (!::SetWindowPos(m_hwnd, HWND_TOPMOST, m_origWindowRect.left, m_origWindowRect.top, 
 								m_origWindowRect.right - m_origWindowRect.left, 
 								m_origWindowRect.bottom - m_origWindowRect.top, SWP_NOACTIVATE | SWP_NOZORDER))
 	{

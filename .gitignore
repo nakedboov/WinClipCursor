@@ -1,0 +1,9 @@
+out/*
+tmp/*
+ipch/*
+_ReSharper.WinClipCursor/*
+*.pdb
+*.opensdf
+*.user
+*.sdf
+WinClipCursor.suo

@@ -27,7 +27,7 @@ public:
 
 	void RunPollingLoop();
 	void SetClipHook();
-
+	
 	ClipHelper& ClipCursorHelper() { return m_clipHelper; }
 	FullScreen&	FullScreenHelper() { return m_fullScreen; }
 
